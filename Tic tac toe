@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="game-container">
+    <h1>Tic-Tac-Toe</h1>
+    <div class="board" id="board">
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+      <div class="cell" data-cell></div>
+    </div>
+  </div>
+
+  <div class="result-screen" id="resultScreen">
+    <h2 id="resultMessage"></h2>
+    <button id="newGameButton">New Game</button>
+  </div>
+
+  <!-- New div for Made by Casper.W -->
+  <div class="footer-text">
+    Made by Casper.W
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
+/* General reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    height: 100vh;
+    background: linear-gradient(135deg, #1e90ff, #ff6347);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+/* Game Container */
+.game-container {
+    text-align: center;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 0 auto;
+    width: 300px;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    background-color: #fff;
+    border: 2px solid #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+/* Styling for X and O */
+.cell.x::before {
+    content: "X";
+    color: #1e90ff;
+}
+
+.cell.o::before {
+    content: "O";
+    color: #ff6347;
+}
+
+/* Button Styling */
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+/* Result Screen */
+.result-screen {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+}
+
+#resultMessage {
+    font-size: 1.8rem;
+}
+
+#newGameButton {
+    padding: 10px 20px;
+    background-color: #ff6347;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#newGameButton:hover {
+    background-color: #ff4500;
+}
+
+/* New styles for the footer text (Made by Casper.W) */
+.footer-text {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .board {
+        width: 240px;
+    }
+
+    .cell {
+        width: 80px;
+        height: 80px;
+        font-size: 1.5rem;
+    }
+}
+const cells = document.querySelectorAll('[data-cell]');
+const resultScreen = document.getElementById('resultScreen');
+const resultMessage = document.getElementById('resultMessage');
+const board = document.getElementById('board');
+const newGameButton = document.getElementById('newGameButton');
+
+const X_CLASS = 'x';
+const O_CLASS = 'o';
+let circleTurn;
+
+const WINNING_COMBINATIONS = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+];
+
+startGame();
+
+function startGame() {
+    circleTurn = false;
+    resultScreen.style.display = "none"; // Hide result screen on game start
+    cells.forEach(cell => {
+        cell.classList.remove(X_CLASS);
+        cell.classList.remove(O_CLASS);
+        cell.removeEventListener('click', handleClick);
+        cell.addEventListener('click', handleClick, { once: true });
+    });
+}
+
+function handleClick(e) {
+    const cell = e.target;
+    const currentClass = circleTurn ? O_CLASS : X_CLASS;
+    placeMark(cell, currentClass);
+
+    if (checkWin(currentClass)) {
+        endGame(false, currentClass);
+    } else if (isDraw()) {
+        endGame(true);
+    } else {
+        swapTurns();
+    }
+}
+
+function placeMark(cell, currentClass) {
+    cell.classList.add(currentClass);
+}
+
+function swapTurns() {
+    circleTurn = !circleTurn;
+}
+
+function checkWin(currentClass) {
+    return WINNING_COMBINATIONS.some(combination => {
+        return combination.every(index => {
+            return cells[index].classList.contains(currentClass);
+        });
+    });
+}
+
+function isDraw() {
+    return [...cells].every(cell => {
+        return cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS);
+    });
+}
+
+function endGame(draw, winnerClass = null) {
+    if (draw) {
+        setResultMessage("It's a Draw!");
+    } else {
+        setResultMessage(`${winnerClass.toUpperCase()} Wins!`);
+    }
+    resultScreen.style.display = "block"; // Show result screen
+    cells.forEach(cell => {
+        cell.removeEventListener('click', handleClick);
+    });
+}
+
+function setResultMessage(message) {
+    resultMessage.innerText = message;
+}
+
+// New game button functionality
+newGameButton.addEventListener('click', startGame);
+
